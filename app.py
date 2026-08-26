@@ -43,54 +43,53 @@ def generate_image():
             return jsonify({"error": "The 'prompt' field is required"}), 400
 
         prompt = data['prompt']
-        ratio = data.get('ratio')
+        ratio = data.get('ratio', '9:16')
         output_format = data.get('format', 'jpg').lower()
 
-        if ratio:
-            valid_ratios = ['1:1', '16:9', '9:16', '3:4']
-            if ratio not in valid_ratios:
-                return jsonify({"error": f"Invalid ratio. Use: {', '.join(valid_ratios)}"}), 400
+        valid_ratios = ['1:1', '16:9', '9:16', '3:4']
+        if ratio not in valid_ratios:
+            return jsonify({"error": f"Invalid ratio. Use: {', '.join(valid_ratios)}"}), 400
 
         valid_formats = ['jpg', 'jpeg', 'png']
         if output_format not in valid_formats:
             return jsonify({"error": f"Invalid format. Use: {', '.join(valid_formats)}"}), 400
 
+        payload = {
+            "prompt": prompt,
+            "simId": DEFAULT_SIM_ID,
+            "aspectRatio": ratio
+        }
+
         if 'images' in data and isinstance(data['images'], list) and len(data['images']) > 0:
             images_b64 = data['images']
-            
             processed_images = []
             for image_b64 in images_b64:
                 try:
                     base64.b64decode(image_b64)
                 except:
                     return jsonify({"error": "Invalid base64 image"}), 400
-                
-                if image_b64.startswith('iVBORw'):
-                    image_type = 'png'
-                else:
-                    image_type = 'jpeg'
-                    
+                image_type = 'png' if image_b64.startswith('iVBORw') else 'jpeg'
                 processed_images.append(f"data:image/{image_type};base64,{image_b64}")
-
+            
             payload = {
                 "images": json.dumps(processed_images),
                 "prompt": prompt,
                 "simId": EDIT_SIM_ID
             }
-            
-        else:
-            payload = {
-                "prompt": prompt,
-                "simId": DEFAULT_SIM_ID
-            }
             if ratio:
                 payload["aspectRatio"] = ratio
+
+        print(f"Generate Payload: {payload}")
 
         headers = {"Content-Type": "application/json"}
         response = requests.post(ASIM_API_URL, headers=headers, json=payload, timeout=120)
 
+        print(f"Generate Response Status: {response.status_code}")
+        print(f"Generate Response Body: {response.text}")
+
         if response.status_code != 200:
-            return jsonify({"error": f"API error: {response.status_code}"}), 500
+            error_msg = response.json().get('error', 'Unknown error') if response.text else 'No error message'
+            return jsonify({"error": f"ASIM API error: {error_msg}"}), 500
 
         result = response.json()
         if 'imageUrl' not in result:
@@ -135,13 +134,12 @@ def edit_image():
             return jsonify({"error": "The 'image' or 'images' field is required"}), 400
 
         prompt = data['prompt']
-        ratio = data.get('ratio')
+        ratio = data.get('ratio', '9:16')
         output_format = data.get('format', 'jpg').lower()
 
-        if ratio:
-            valid_ratios = ['1:1', '16:9', '9:16', '3:4']
-            if ratio not in valid_ratios:
-                return jsonify({"error": f"Invalid ratio. Use: {', '.join(valid_ratios)}"}), 400
+        valid_ratios = ['1:1', '16:9', '9:16', '3:4']
+        if ratio not in valid_ratios:
+            return jsonify({"error": f"Invalid ratio. Use: {', '.join(valid_ratios)}"}), 400
 
         valid_formats = ['jpg', 'jpeg', 'png']
         if output_format not in valid_formats:
@@ -153,12 +151,7 @@ def edit_image():
                 base64.b64decode(image_b64)
             except:
                 return jsonify({"error": "Invalid base64 image"}), 400
-            
-            if image_b64.startswith('iVBORw'):
-                image_type = 'png'
-            else:
-                image_type = 'jpeg'
-                
+            image_type = 'png' if image_b64.startswith('iVBORw') else 'jpeg'
             processed_images.append(f"data:image/{image_type};base64,{image_b64}")
 
         payload = {
@@ -166,15 +159,20 @@ def edit_image():
             "prompt": prompt,
             "simId": EDIT_SIM_ID
         }
-        
         if ratio:
             payload["aspectRatio"] = ratio
+
+        print(f"Edit Payload: {payload}")
 
         headers = {"Content-Type": "application/json"}
         response = requests.post(ASIM_API_URL, headers=headers, json=payload, timeout=120)
 
+        print(f"Edit Response Status: {response.status_code}")
+        print(f"Edit Response Body: {response.text}")
+
         if response.status_code != 200:
-            return jsonify({"error": f"API error: {response.status_code}"}), 500
+            error_msg = response.json().get('error', 'Unknown error') if response.text else 'No error message'
+            return jsonify({"error": f"ASIM API error: {error_msg}"}), 500
 
         result = response.json()
         if 'imageUrl' not in result:
@@ -223,8 +221,12 @@ def ignore_ref():
             + data['prompt']
         )
 
-        ratio = data.get('ratio')
+        ratio = data.get('ratio', '9:16')
         output_format = data.get('format', 'jpg').lower()
+
+        valid_ratios = ['1:1', '16:9', '9:16', '3:4']
+        if ratio not in valid_ratios:
+            return jsonify({"error": f"Invalid ratio. Use: {', '.join(valid_ratios)}"}), 400
 
         valid_formats = ['jpg', 'jpeg', 'png']
         if output_format not in valid_formats:
@@ -236,16 +238,19 @@ def ignore_ref():
             "simId": EDIT_SIM_ID
         }
         if ratio:
-            valid_ratios = ['1:1', '16:9', '9:16', '3:4']
-            if ratio not in valid_ratios:
-                return jsonify({"error": f"Invalid ratio. Use: {', '.join(valid_ratios)}"}), 400
             payload["aspectRatio"] = ratio
+
+        print(f"Ignore Ref Payload: {payload}")
 
         headers = {"Content-Type": "application/json"}
         response = requests.post(ASIM_API_URL, headers=headers, json=payload, timeout=120)
 
+        print(f"Ignore Ref Response Status: {response.status_code}")
+        print(f"Ignore Ref Response Body: {response.text}")
+
         if response.status_code != 200:
-            return jsonify({"error": f"API error: {response.status_code}"}), 500
+            error_msg = response.json().get('error', 'Unknown error') if response.text else 'No error message'
+            return jsonify({"error": f"ASIM API error: {error_msg}"}), 500
         
         result = response.json()
         if 'imageUrl' not in result:
