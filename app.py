@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, send_from_directory
 import requests
 import base64
 import json
@@ -14,8 +14,12 @@ ASIM_API_URL = "https://a.asim.sh/sim_apis/image_gen"
 DEFAULT_SIM_ID = 282195
 EDIT_SIM_ID = 272290
 
-@app.route('/', methods=['GET'])
-def health_check():
+@app.route('/')
+def home():
+    return send_file('statics/docs/index.html')
+
+@app.route('/api')
+def api_status():
     return jsonify({
         "status": "active",
         "creator": "raihan07",
@@ -26,6 +30,10 @@ def health_check():
             "ignore_ref": "/ignore_ref (POST)"
         }
     })
+
+@app.route('/docs/<path:filename>')
+def serve_static(filename):
+    return send_from_directory('statics/docs', filename)
 
 @app.route('/generate', methods=['POST'])
 def generate_image():
