@@ -16,7 +16,7 @@ EDIT_SIM_ID = 272290
 
 @app.route('/')
 def home():
-    return send_file('statics/docs/index.html')
+    return send_file('static/docs/index.html')
 
 @app.route('/api')
 def api_status():
