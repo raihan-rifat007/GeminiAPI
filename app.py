@@ -33,7 +33,7 @@ def api_status():
 
 @app.route('/docs/<path:filename>')
 def serve_static(filename):
-    return send_from_directory('statics/docs', filename)
+    return send_from_directory('static/docs', filename)
 
 @app.route('/generate', methods=['POST'])
 def generate_image():
