@@ -18,7 +18,7 @@
 ## 📋 Table of Contents
 
 - [Overview](#overview)
-- [Features](##features)
+- [Features](#features)
 - [Tech Stack](#tech-stack)
 - [Quick Start](#quick-start)
 - [Installation](#installation)
